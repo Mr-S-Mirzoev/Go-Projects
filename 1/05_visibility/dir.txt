@@ -9,5 +9,5 @@ C:\Users\User\go
     │   │   │   └───func.go
     │   │   └───main.go
     └───github.com
-        └───rvasily
+        └───vasya
             └───examplerepo

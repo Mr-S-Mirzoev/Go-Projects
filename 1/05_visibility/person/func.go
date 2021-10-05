@@ -7,7 +7,7 @@ import (
 func NewPerson(id int, name, secret string) *Person {
 	return &Person{
 		ID:     1,
-		Name:   "rvasily",
+		Name:   "vasya",
 		secret: "secret",
 	}
 }

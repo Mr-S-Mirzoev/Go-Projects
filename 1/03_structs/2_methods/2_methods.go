@@ -46,7 +46,7 @@ func main() {
 
 	var acc Account = Account{
 		Id:   1,
-		Name: "rvasily",
+		Name: "vasya",
 		Person: Person{
 			Id:   2,
 			Name: "Vasily Romanov",

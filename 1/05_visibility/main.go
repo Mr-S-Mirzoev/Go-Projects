@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	p := person.NewPerson(1, "rvasily", "secret")
+	p := person.NewPerson(1, "vasya", "secret")
 
 	// p.secret undefined (cannot refer to unexported field or method secret)
 	// fmt.Printf("main.PrintPerson: %+v\n", p.secret)

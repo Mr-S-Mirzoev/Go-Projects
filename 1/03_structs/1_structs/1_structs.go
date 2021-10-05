@@ -20,7 +20,7 @@ func main() {
 	// полное объявление структуры
 	var acc Account = Account{
 		Id: 1,
-		// Name: "rvasily",
+		// Name: "vasya",
 		Person: Person{
 			Name:    "Василий",
 			Address: "Москва",

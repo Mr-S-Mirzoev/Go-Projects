@@ -76,7 +76,7 @@ func main() {
 	Buy(myWallet)
 
 	var myMoney Payer
-	myMoney = &Card{Balance: 100, Cardholder: "rvasily"}
+	myMoney = &Card{Balance: 100, Cardholder: "vasya"}
 	Buy(myMoney)
 
 	myMoney = &ApplePay{Money: 9}

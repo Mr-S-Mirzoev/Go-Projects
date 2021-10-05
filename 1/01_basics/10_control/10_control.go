@@ -9,7 +9,7 @@ func main() {
 		fmt.Println("boolVal is true")
 	}
 
-	mapVal := map[string]string{"name": "rvasily"}
+	mapVal := map[string]string{"name": "vasya"}
 	// условие с блоком инициализации
 	if keyValue, keyExist := mapVal["name"]; keyExist {
 		fmt.Println("name =", keyValue)
