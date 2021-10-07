@@ -13,7 +13,7 @@ func main() {
 	*/
 }
 
-//nolint:deadcode
+//nolint:deadcode,unused
 func initGame() {
 	/*
 		эта функция инициализирует игровой мир - все команты
@@ -21,7 +21,7 @@ func initGame() {
 	*/
 }
 
-//nolint:deadcode
+//nolint:deadcode,unused
 func handleCommand(command string) string {
 	/*
 		данная функция принимает команду от "пользователя"
