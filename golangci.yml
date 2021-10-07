@@ -80,7 +80,6 @@ linters:
     - misspell
     - prealloc
     - staticcheck
-    - go
     - unparam
     - unused
     - varcheck
