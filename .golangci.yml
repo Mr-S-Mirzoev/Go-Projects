@@ -1,0 +1,85 @@
+run:
+  deadline: 1m
+  tests: false
+
+  skip-dirs-use-default: true
+  skip-dirs:
+    - bin$
+    - \.git$
+    - misc$
+    - spec$
+    - pkg$
+
+  skip-files:
+    - "_easyjson.go"
+
+linters-settings:
+  errcheck:
+    check-blank: true
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0.3
+  gocyclo:
+    min-complexity: 20
+  gocognit:
+    min-complexity: 30
+  dupl:
+    threshold: 200
+  nakedret:
+    max-func-lines: 30
+  funlen:
+    lines: 80
+    statements: 50
+  godox:
+    keywords:
+      - TODO
+      - BUG
+      - FIXME
+      - HACK
+  dogsled:
+    max-blank-identifiers: 2
+  whitespace:
+    multi-if: false
+    multi-func: false
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    # - deadcode
+    - depguard
+    - dupl
+    - errcheck
+    - goconst
+    - gocritic
+    - gocyclo
+    - godox
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - prealloc
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+  fast: false
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude:
+    - "should have comment"
+    - "always receives"
+    - "parameter .* is always"
+    - "comment on exported .* should be of the form"
+
+output:
+  format: colored-line-number
