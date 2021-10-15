@@ -5,5 +5,6 @@ golangci-lint:
   image: golangci/golangci-lint:v1.42.1
   stage: lint
   script:
-    - golangci-lint -c .golangci.yml run $(find . | grep '99_hw/.*go' | tr '\n' ' ')
+    - arr=$(find . | grep '99_hw$')
+    - for i in $arr; do golangci-lint -c .golangci.yml run $i/...;done
 
