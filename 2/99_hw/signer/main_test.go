@@ -39,7 +39,7 @@ func TestPipeline(t *testing.T) {
 			}
 		}),
 	}
-	ExecutePipeline(freeFlowJobs...)
+	ExecutePipeline(freeFlowJobs...) //nolint:typecheck
 	if !ok || recieved == 0 {
 		t.Errorf("no value free flow - dont collect them")
 	}
@@ -103,6 +103,7 @@ func TestSigner(t *testing.T) {
 	inputData := []int{0, 1, 1, 2, 3, 5, 8}
 	// inputData := []int{0,1}
 
+	//nolint:typecheck
 	hashSignJobs := []job{
 		job(func(in, out chan interface{}) {
 			for _, fibNum := range inputData {
@@ -124,7 +125,7 @@ func TestSigner(t *testing.T) {
 
 	start := time.Now()
 
-	ExecutePipeline(hashSignJobs...)
+	ExecutePipeline(hashSignJobs...) //nolint:typecheck
 
 	end := time.Since(start)
 

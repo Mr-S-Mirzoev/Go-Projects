@@ -43,7 +43,7 @@ func TestByIlia(t *testing.T) {
 
 	start := time.Now()
 
-	ExecutePipeline(freeFlowJobs...)
+	ExecutePipeline(freeFlowJobs...) //nolint:typecheck
 
 	end := time.Since(start)
 

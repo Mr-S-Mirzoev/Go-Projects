@@ -1,6 +1,6 @@
 run:
   deadline: 1m
-  tests: false
+  tests: true
 
   skip-dirs-use-default: true
   skip-dirs:
