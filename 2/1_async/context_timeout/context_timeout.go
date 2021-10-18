@@ -12,6 +12,7 @@ func worker(ctx context.Context, workerNum int, out chan<- int) {
 	fmt.Println(workerNum, "студент ", waitTime)
 	select {
 	case <-ctx.Done():
+		fmt.Println("студент", workerNum, "не успел придумать вопрос")
 		return
 	case <-time.After(waitTime):
 		fmt.Println("студент", workerNum, "придумал вопрос")
