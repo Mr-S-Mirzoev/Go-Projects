@@ -7,7 +7,7 @@
 ## Материалы для дополнительного чтения на английском
 
 * https://golang.org/ref/spec - спецификация по язык
-* https://golang.org/ref/mem - модель памяти го. на начальном этапе не надо, но знать полезно
+* https://golang.org/ref/mem - модель памяти го. на начальном этапе не надо, но знать полезно. ( можно еще прочитать эту статью, если интересна тема https://deepu.tech/memory-management-in-golang)
 * https://golang.org/doc/code.html - про организацию кода. GOPATH и пакеты
 * https://golang.org/cmd/go/
 * https://blog.golang.org/strings
