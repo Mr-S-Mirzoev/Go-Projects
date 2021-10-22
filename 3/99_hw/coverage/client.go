@@ -12,18 +12,20 @@ import (
 	"time"
 )
 
+//nolint:unused,varcheck
 const (
 	orderAsc = iota
 	orderDesc
 )
 
+//nolint:unused,varcheck
 var (
 	errTest = errors.New("testing")
 	client  = &http.Client{Timeout: time.Second}
 )
 
 type User struct {
-	Id     int
+	ID     int
 	Name   string
 	Age    int
 	About  string
@@ -78,7 +80,7 @@ func (srv *SearchClient) FindUsers(req SearchRequest) (*SearchResponse, error) {
 		return nil, fmt.Errorf("offset must be > 0")
 	}
 
-	//нужно для получения следующей записи, на основе которой мы скажем - можно показать переключатель следующей страницы или нет
+	// нужно для получения следующей записи, на основе которой мы скажем - можно показать переключатель следующей страницы или нет
 	req.Limit++
 
 	searcherParams.Add("limit", strconv.Itoa(req.Limit))
@@ -87,7 +89,7 @@ func (srv *SearchClient) FindUsers(req SearchRequest) (*SearchResponse, error) {
 	searcherParams.Add("order_field", req.OrderField)
 	searcherParams.Add("order_by", strconv.Itoa(req.OrderBy))
 
-	searcherReq, _ := http.NewRequest("GET", srv.URL+"?"+searcherParams.Encode(), nil)
+	searcherReq, _ := http.NewRequest("GET", srv.URL+"?"+searcherParams.Encode(), nil) //nolint:errcheck
 	searcherReq.Header.Add("AccessToken", srv.AccessToken)
 
 	resp, err := client.Do(searcherReq)
@@ -98,11 +100,11 @@ func (srv *SearchClient) FindUsers(req SearchRequest) (*SearchResponse, error) {
 		return nil, fmt.Errorf("unknown error %s", err)
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body) //nolint:errcheck
 
 	switch resp.StatusCode {
 	case http.StatusUnauthorized:
-		return nil, fmt.Errorf("Bad AccessToken")
+		return nil, fmt.Errorf("bad AccessToken")
 	case http.StatusInternalServerError:
 		return nil, fmt.Errorf("SearchServer fatal error")
 	case http.StatusBadRequest:
