@@ -5,5 +5,5 @@ golangci-lint:
   image: golangci/golangci-lint:v1.42.1
   stage: lint
   script:
-    - run_tests.sh
+    - bash ./run_tests.sh
 
