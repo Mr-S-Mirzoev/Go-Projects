@@ -32,7 +32,7 @@
 * Построение покрытия: `go test -coverprofile=cover.out && go tool cover -html=cover.out -o cover.html`. 
 * В XML 2 поля с именем, наше поле Name это first_name + last_name из XML
 * http://www.golangprograms.com/files-directories-examples.html - в помощь для работы с файлами
-* проверка ошибок в функциях io.WriteString, ioutil.ReadAll(и аналогичных им, что читают из Reader, пишут во Writer)
+* проверка ошибок в функциях io.WriteString, ioutil.ReadAll(и аналогичных им, что читают из Reader, пишут во Writer), а также json.Marshal
   может быть не покрыта тестами
 
 Советы:
