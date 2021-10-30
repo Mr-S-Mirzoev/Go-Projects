@@ -17,7 +17,9 @@ Browser {{.Browser}}
 you at {{.URL}}
 `
 
-var tmpl *template.Template
+// var someHtml = "<html><body>Hello, <b>{{.Name}}</b>!</body></html>"
+
+var tmpl = template.New("123")
 
 func handle(w http.ResponseWriter, r *http.Request) {
 	params := tplParams{

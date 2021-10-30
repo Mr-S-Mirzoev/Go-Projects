@@ -17,11 +17,11 @@ import (
 git subtree push --prefix 4/05_bot heroku master
 */
 
-// https://api.telegram.org/bot1193374322:AAE9rEdesfSs602Z9d8ZxVPO8vfWbN-dyao/getUpdates
+// https://api.telegram.org/bot1953480583:AAEU7eBaZnCUt525oUkCMRCQxK1TJmaoVd4/getUpdates
 
 const (
-	BotToken   = "1193374322:AAE9rEdesfSs602Z9d8ZxVPO8vfWbN-dyao"
-	WebhookURL = "https://3997032961e8.ngrok.io"
+	BotToken   = "1953480583:AAEU7eBaZnCUt525oUkCMRCQxK1TJmaoVd4"
+	WebhookURL = "https://edu-2021-2-bot.herokuapp.com"
 )
 
 var rss = map[string]string{
@@ -94,15 +94,15 @@ func main() {
 				`there is only Habr feed availible`,
 			)
 
-			//msg.ReplyMarkup = &tgbotapi.ReplyKeyboardMarkup{
-			//	Keyboard: [][]tgbotapi.KeyboardButton{
-			//		{
-			//			{
-			//				Text: "Habr",
-			//			},
-			//		},
-			//	},
-			//}
+			msg.ReplyMarkup = &tgbotapi.ReplyKeyboardMarkup{
+				Keyboard: [][]tgbotapi.KeyboardButton{
+					{
+						{
+							Text: "Habr",
+						},
+					},
+				},
+			}
 			bot.Send(msg)
 			continue
 		}

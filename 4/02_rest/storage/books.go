@@ -9,7 +9,7 @@ import (
 var NotFound = errors.New("not found")
 
 type Book struct {
-	ID    int   `json:"id"`
+	ID    int    `json:"id"`
 	Title string `json:"title"`
 	Price uint   `json:"price"`
 }

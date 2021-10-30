@@ -7,7 +7,7 @@ user -> webAPP -> index.html (содержит js + css + базовая раз�
     js after 30s -> backend (например проверяет нет ли новых сообщений)
     js after click -> backend (например отправляет письмо по нажатии кнопки)
 
-Frontend [html + css + js] -> Backend [server + database]
+Frontend [html + js] -> Backend [server + database]
         RPC (Remote Procedure Call) 
         Frontend - [
             https://localhost/rpc?func=login_user&login=user1&password=user2
@@ -53,7 +53,6 @@ Frontend [html + css + js] -> Backend [server + database]
 
                 )
             }
-
         ] -> Backend
         ...
 
