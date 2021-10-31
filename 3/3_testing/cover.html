@@ -3,6 +3,7 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>3_testing: Go Coverage Report</title>
 		<style>
 			body {
 				background: black;
@@ -54,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">msu-lectures/3/3_testing/main.go (87.5%)</option>
+				<option value="file0">gitlab.com/mailru-go/lectures-2021-2/3/3_testing/main.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -92,7 +93,7 @@ func GetUser(key string) (*User, error) <span class="cov8" title="1">{
 
         <span class="cov8" title="1">user := &amp;User{}
         err := json.Unmarshal(jsonStr, user)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("cant decode json")
         }</span>
 
