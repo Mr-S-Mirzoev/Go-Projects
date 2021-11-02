@@ -2,19 +2,17 @@ package main
 
 // сюда писать код
 
-/*
 import (
 	"context"
 )
 
 var (
 	// @BotFather в телеграме даст вам это
-	BotToken   = "XXX"
+	BotToken = "XXX"
 
 	// урл выдаст вам игрок или хероку
 	WebhookURL = "https://525f2cb5.ngrok.io"
 )
-
 
 func startTaskBot(ctx context.Context) error {
 	// сюда пишите ваш код
@@ -27,4 +25,3 @@ func main() {
 		panic(err)
 	}
 }
-*/

@@ -45,20 +45,24 @@ func NewTDS() *TDS {
 func (srv *TDS) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/getMe", func(w http.ResponseWriter, r *http.Request) {
+		//nolint:errcheck
 		w.Write([]byte(`{"ok":true,"result":{"id":` +
 			strconv.Itoa(BotChatID) +
 			`,"is_bot":true,"first_name":"game_test_bot","username":"game_test_bot"}}`))
 	})
 	mux.HandleFunc("/setWebhook", func(w http.ResponseWriter, r *http.Request) {
+		//nolint:errcheck
 		w.Write([]byte(`{"ok":true,"result":true,"description":"Webhook was set"}`))
 	})
 	mux.HandleFunc("/sendMessage", func(w http.ResponseWriter, r *http.Request) {
+		//nolint:errcheck
 		chatID, _ := strconv.Atoi(r.FormValue("chat_id"))
 		text := r.FormValue("text")
 		srv.Lock()
 		srv.Answers[chatID] = text
 		srv.Unlock()
 
+		//nolint:errcheck
 		w.Write([]byte(`{"ok":true}`))
 	})
 
@@ -148,11 +152,15 @@ func SendMsgToBot(userID int, text string) error {
 			Date: int(time.Now().Unix()),
 		},
 	}
+	//nolint:errcheck
 	reqData, _ := json.Marshal(upd)
 
 	reqBody := bytes.NewBuffer(reqData)
+	//nolint:errcheck
 	req, _ := http.NewRequest(http.MethodPost, WebhookURL, reqBody)
-	_, err := client.Do(req)
+	resp, err := client.Do(req)
+	//nolint:govet
+	defer resp.Body.Close()
 	return err
 }
 
@@ -173,6 +181,7 @@ func TestTasks(t *testing.T) {
 	go func() {
 		err := startTaskBot(ctx)
 		if err != nil {
+			//nolint:govet
 			t.Fatalf("startTaskBot error: %s", err)
 		}
 	}()
