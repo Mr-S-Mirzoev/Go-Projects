@@ -12,6 +12,7 @@ run:
 
   skip-files:
     - "_easyjson.go"
+    - "jwt_example.go"
 
 linters-settings:
   errcheck:
