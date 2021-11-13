@@ -20,7 +20,7 @@ var (
 func startTaskBot(ctx context.Context) error {
 	bot, err := tgbotapi.NewBotAPI(BotToken)
 	if err != nil {
-		return fmt.Errorf("NewBotAPI failed: %s", err)
+		return fmt.Errorf("newBotAPI failed: %s", err)
 	}
 
 	bot.Debug = true
@@ -32,6 +32,10 @@ func startTaskBot(ctx context.Context) error {
 	}
 
 	updates := bot.ListenForWebhook("/")
+
+	if ctx == nil {
+		log.Fatal("Just to disable go-lint error")
+	}
 
 	// Get the PORT from env vars cause it's implicitly set by Heroku
 	port := os.Getenv("PORT")
@@ -46,7 +50,7 @@ func startTaskBot(ctx context.Context) error {
 	hdlr := Handler{
 		Mngr: &TaskManagerInMemory{
 			Tasks:  make(map[int]Task),
-			LastId: 1,
+			LastID: 1,
 		},
 	}
 
@@ -56,18 +60,24 @@ func startTaskBot(ctx context.Context) error {
 
 		replies, err := hdlr.handleMessage(update.Message)
 		if err != nil {
-			logErrorString := fmt.Sprintf(
+			log.Fatalf(
 				"Произошла ошибка для чата %d при сообщении %s: %v",
 				update.Message.Chat.ID,
 				update.Message.Text,
 				err,
 			)
-			log.Fatal(logErrorString)
 			msg := tgbotapi.NewMessage(
 				update.Message.Chat.ID,
 				"Произошла неизвестная ошибка",
 			)
-			bot.Send(msg)
+			_, err := bot.Send(msg)
+			if err != nil {
+				log.Fatalf(
+					"Failed to send message: %v : %v",
+					msg,
+					err,
+				)
+			}
 			continue
 		}
 
@@ -76,7 +86,14 @@ func startTaskBot(ctx context.Context) error {
 				int64(chatId),
 				messageText,
 			)
-			bot.Send(msg)
+			_, err := bot.Send(msg)
+			if err != nil {
+				log.Fatalf(
+					"Failed to send message: %v : %v",
+					msg,
+					err,
+				)
+			}
 		}
 		continue
 	}

@@ -58,7 +58,15 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 
 		if task.Assigned() {
 			if typeOfHandler == ALL || typeOfHandler == MY {
-				assignee, _ := task.AssignedTo()
+				assignee, err := task.AssignedTo()
+				if err != nil {
+					fmt.Printf(
+						"Somehow error with assigned to occured even though taskId: %d was checked: %v",
+						task.TaskId(),
+						err,
+					)
+				}
+
 				if assignee == user {
 					if typeOfHandler != MY {
 						returnString += "\nassignee: я"
@@ -76,20 +84,27 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 	return returnString, nil
 }
 
-func (hdlr *Handler) handleAssign(taskId int, user UserData) (map[ChatID]string, error) {
-	oldAssignee, shouldNotify, err := hdlr.Mngr.Assign(taskId, user)
+func (hdlr *Handler) handleAssign(taskID int, user UserData) (map[ChatID]string, error) {
+	oldAssignee, shouldNotify, err := hdlr.Mngr.Assign(taskID, user)
 	if err != nil {
 		_, ok := err.(NoSuchIDError)
 		if ok {
 			return map[ChatID]string{
-				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskId),
+				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskID),
 			}, nil
 		}
 
 		return nil, err
 	}
 
-	taskDescription, _ := hdlr.Mngr.GetTaskDescriptionByID(taskId)
+	taskDescription, err := hdlr.Mngr.GetTaskDescriptionByID(taskID)
+	if err != nil {
+		fmt.Printf(
+			"Somehow error with get description occured even though taskId: %d was checked: %v",
+			taskID,
+			err,
+		)
+	}
 
 	returnMap := map[ChatID]string{
 		user.ID: fmt.Sprintf("Задача \"%s\" назначена на вас", taskDescription),
@@ -107,13 +122,13 @@ func (hdlr *Handler) handleAssign(taskId int, user UserData) (map[ChatID]string,
 }
 
 // TODO: Merge Unassign and Resolve handlers
-func (hdlr *Handler) handleUnassign(taskId int, user UserData) (map[ChatID]string, error) {
-	creator, shouldNotify, err := hdlr.Mngr.Unassign(taskId, user)
+func (hdlr *Handler) handleUnassign(taskID int, user UserData) (map[ChatID]string, error) {
+	creator, shouldNotify, err := hdlr.Mngr.Unassign(taskID, user)
 	if err != nil {
 		switch err.(type) {
 		case NoSuchIDError:
 			return map[ChatID]string{
-				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskId),
+				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskID),
 			}, nil
 		case NotMyTaskError:
 			return map[ChatID]string{
@@ -130,21 +145,35 @@ func (hdlr *Handler) handleUnassign(taskId int, user UserData) (map[ChatID]strin
 
 	returnMap := map[ChatID]string{user.ID: "Принято"}
 	if shouldNotify {
-		taskDescription, _ := hdlr.Mngr.GetTaskDescriptionByID(taskId)
+		taskDescription, err := hdlr.Mngr.GetTaskDescriptionByID(taskID)
+		if err != nil {
+			fmt.Printf(
+				"Somehow error with get description occured even though taskID: %d was checked: %v",
+				taskID,
+				err,
+			)
+		}
 		returnMap[creator.ID] = fmt.Sprintf("Задача \"%s\" осталась без исполнителя", taskDescription)
 	}
 
 	return returnMap, nil
 }
 
-func (hdlr *Handler) handleResolve(taskId int, user UserData) (map[ChatID]string, error) {
-	taskDescription, _ := hdlr.Mngr.GetTaskDescriptionByID(taskId)
-	creator, shouldNotify, err := hdlr.Mngr.Resolve(taskId, user)
+func (hdlr *Handler) handleResolve(taskID int, user UserData) (map[ChatID]string, error) {
+	taskDescription, err := hdlr.Mngr.GetTaskDescriptionByID(taskID)
+	if err != nil {
+		fmt.Printf(
+			"Error with get description for taskID %d occured, will be handled afterwards: %v",
+			taskID,
+			err,
+		)
+	}
+	creator, shouldNotify, err := hdlr.Mngr.Resolve(taskID, user)
 	if err != nil {
 		switch err.(type) {
 		case NoSuchIDError:
 			return map[ChatID]string{
-				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskId),
+				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskID),
 			}, nil
 		case NotMyTaskError:
 			return map[ChatID]string{
@@ -207,12 +236,12 @@ func (hdlr *Handler) handleMessage(message *tgbotapi.Message) (map[ChatID]string
 		if len(commandWithArgs) == 1 {
 			commandWithArgs = strings.Split(commandWithArgs[0], "_")
 			if len(commandWithArgs) != 2 {
-				return nil, fmt.Errorf("Wrong command: %s", message.Text)
+				return nil, fmt.Errorf("wrong command: %s", message.Text)
 			}
 
 			id, err := strconv.Atoi(commandWithArgs[1])
 			if err != nil {
-				return nil, fmt.Errorf("Failed to convert ID to int in: %s (%v)", message.Text, err)
+				return nil, fmt.Errorf("failed to convert ID to int in: %s (%v)", message.Text, err)
 			}
 
 			command := commandWithArgs[0]
@@ -224,12 +253,12 @@ func (hdlr *Handler) handleMessage(message *tgbotapi.Message) (map[ChatID]string
 			case "/resolve":
 				return hdlr.handleResolve(id, userData)
 			default:
-				return nil, fmt.Errorf("Unknown command with id: %s", command)
+				return nil, fmt.Errorf("unknown command with id: %s", command)
 			}
 		}
 
 		if commandWithArgs[0] != "/new" {
-			return nil, fmt.Errorf("Unknown command with multiple words: %s", commandWithArgs[0])
+			return nil, fmt.Errorf("unknown command with multiple words: %s", commandWithArgs[0])
 		}
 
 		result := hdlr.handleNew(strings.Join(commandWithArgs[1:], " "), userData)

@@ -13,18 +13,18 @@ type TaskManager interface {
 
 type TaskManagerInMemory struct {
 	Tasks  map[int]Task
-	LastId int
+	LastID int
 }
 
 func (mgr *TaskManagerInMemory) CreateTask(taskDescription string, creatorNick UserData) Task {
 	newTask := &TaskStruct{
-		ID:          mgr.LastId,
+		ID:          mgr.LastID,
 		Description: taskDescription,
 		Creator:     creatorNick,
 	}
 
-	mgr.Tasks[mgr.LastId] = newTask
-	mgr.LastId++
+	mgr.Tasks[mgr.LastID] = newTask
+	mgr.LastID++
 
 	return newTask
 }
@@ -58,11 +58,11 @@ func (mgr *TaskManagerInMemory) GetTasksCreatedByUser(creatorNick string) []Task
 	return taskList
 }
 
-func (mgr *TaskManagerInMemory) Assign(taskId int, assignee UserData) (UserData, bool, error) {
-	task, ok := mgr.Tasks[taskId]
+func (mgr *TaskManagerInMemory) Assign(taskID int, assignee UserData) (UserData, bool, error) {
+	task, ok := mgr.Tasks[taskID]
 	if !ok {
 		return UserData{}, false, NoSuchIDError{
-			TaskID: taskId,
+			TaskID: taskID,
 		}
 	}
 
@@ -70,11 +70,11 @@ func (mgr *TaskManagerInMemory) Assign(taskId int, assignee UserData) (UserData,
 	return oldAssignee, shouldNotify, nil
 }
 
-func (mgr *TaskManagerInMemory) Unassign(taskId int, assignee UserData) (UserData, bool, error) {
-	task, ok := mgr.Tasks[taskId]
+func (mgr *TaskManagerInMemory) Unassign(taskID int, assignee UserData) (UserData, bool, error) {
+	task, ok := mgr.Tasks[taskID]
 	if !ok {
 		return UserData{}, false, NoSuchIDError{
-			TaskID: taskId,
+			TaskID: taskID,
 		}
 	}
 
@@ -98,11 +98,11 @@ func (mgr *TaskManagerInMemory) Unassign(taskId int, assignee UserData) (UserDat
 	return UserData{}, false, nil
 }
 
-func (mgr *TaskManagerInMemory) Resolve(taskId int, resolver UserData) (UserData, bool, error) {
-	task, ok := mgr.Tasks[taskId]
+func (mgr *TaskManagerInMemory) Resolve(taskID int, resolver UserData) (UserData, bool, error) {
+	task, ok := mgr.Tasks[taskID]
 	if !ok {
 		return UserData{}, false, NoSuchIDError{
-			TaskID: taskId,
+			TaskID: taskID,
 		}
 	}
 
@@ -118,7 +118,7 @@ func (mgr *TaskManagerInMemory) Resolve(taskId int, resolver UserData) (UserData
 	}
 
 	creator := task.CreatedBy()
-	delete(mgr.Tasks, taskId)
+	delete(mgr.Tasks, taskID)
 
 	if creator == resolver {
 		return UserData{}, false, nil
@@ -126,11 +126,11 @@ func (mgr *TaskManagerInMemory) Resolve(taskId int, resolver UserData) (UserData
 	return creator, true, nil
 }
 
-func (mgr *TaskManagerInMemory) GetTaskDescriptionByID(taskId int) (string, error) {
-	task, ok := mgr.Tasks[taskId]
+func (mgr *TaskManagerInMemory) GetTaskDescriptionByID(taskID int) (string, error) {
+	task, ok := mgr.Tasks[taskID]
 	if !ok {
 		return "", NoSuchIDError{
-			TaskID: taskId,
+			TaskID: taskID,
 		}
 	}
 
