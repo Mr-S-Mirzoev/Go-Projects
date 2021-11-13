@@ -1,4 +1,4 @@
-package task_manager
+package main
 
 import "fmt"
 

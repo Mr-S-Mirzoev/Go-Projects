@@ -5,12 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	tmngr "./task_manager"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type Handler struct {
-	Mngr tmngr.TaskManager
+	Mngr TaskManager
 }
 
 func (hdlr *Handler) handleTasks(message *tgbotapi.Message) (string, error) {

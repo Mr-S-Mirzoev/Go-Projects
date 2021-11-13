@@ -1,4 +1,4 @@
-package task_manager
+package main
 
 type TaskManager interface {
 	CreateTask(string, string, string) Task
@@ -26,20 +26,25 @@ func (mgr *TaskManagerInMemory) CreateTask(taskDescription, cretorNick, assignee
 }
 
 func (mgr *TaskManagerInMemory) GetAllTasks() []Task {
-
+	return nil
 }
+
 func (mgr *TaskManagerInMemory) GetTasksAssignedToUser(assigneeNick string) []Task {
-
+	return nil
 }
+
 func (mgr *TaskManagerInMemory) GetTasksCreatedByUser(creatorNick string) []Task {
-
+	return nil
 }
+
 func (mgr *TaskManagerInMemory) Assign(taskId int, assigneeNick string) (string, bool, error) {
-
+	return "", false, nil
 }
+
 func (mgr *TaskManagerInMemory) Unassign(taskId int, assigneeNick string) error {
-
+	return nil
 }
-func (mgr *TaskManagerInMemory) Resolve(taskId int, resolverNick string) (string, bool, error) {
 
+func (mgr *TaskManagerInMemory) Resolve(taskId int, resolverNick string) (string, bool, error) {
+	return "", false, nil
 }
