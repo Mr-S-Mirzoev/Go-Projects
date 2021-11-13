@@ -25,7 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	handler, err := NewDbExplorer(db)
+	handler, err := NewDbExplorer(db) //nolint:typecheck
 	if err != nil {
 		panic(err)
 	}
