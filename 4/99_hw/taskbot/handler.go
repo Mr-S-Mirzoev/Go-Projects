@@ -44,7 +44,7 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 	returnString := ""
 	sortedTasks := make([]Task, 0, len(tasks))
 	sortedTasks = append(sortedTasks, tasks...)
-	sort.Slice(sortedTasks, func(i, j int) bool { return sortedTasks[i].TaskId() < sortedTasks[j].TaskId() })
+	sort.Slice(sortedTasks, func(i, j int) bool { return sortedTasks[i].TaskID() < sortedTasks[j].TaskID() })
 
 	first := true
 	for _, task := range sortedTasks {
@@ -54,7 +54,7 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 			first = false
 		}
 
-		returnString += fmt.Sprintf("%d. %s by @%s", task.TaskId(), task.TaskDescription(), task.CreatedBy().UserNick)
+		returnString += fmt.Sprintf("%d. %s by @%s", task.TaskID(), task.TaskDescription(), task.CreatedBy().UserNick)
 
 		if task.Assigned() {
 			if typeOfHandler == ALL || typeOfHandler == MY {
@@ -62,7 +62,7 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 				if err != nil {
 					fmt.Printf(
 						"Somehow error with assigned to occured even though taskId: %d was checked: %v",
-						task.TaskId(),
+						task.TaskID(),
 						err,
 					)
 				}
@@ -71,13 +71,13 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 					if typeOfHandler != MY {
 						returnString += "\nassignee: я"
 					}
-					returnString += fmt.Sprintf("\n/unassign_%d /resolve_%d", task.TaskId(), task.TaskId())
+					returnString += fmt.Sprintf("\n/unassign_%d /resolve_%d", task.TaskID(), task.TaskID())
 				} else {
 					returnString += fmt.Sprintf("\nassignee: @%s", assignee.UserNick)
 				}
 			}
 		} else {
-			returnString += fmt.Sprintf("\n/assign_%d", task.TaskId())
+			returnString += fmt.Sprintf("\n/assign_%d", task.TaskID())
 		}
 	}
 
@@ -200,7 +200,7 @@ func (hdlr *Handler) handleResolve(taskID int, user UserData) (map[ChatID]string
 
 func (hdlr *Handler) handleNew(taskDescription string, user UserData) string {
 	task := hdlr.Mngr.CreateTask(taskDescription, user)
-	return fmt.Sprintf("Задача \"%s\" создана, id=%d", task.TaskDescription(), task.TaskId())
+	return fmt.Sprintf("Задача \"%s\" создана, id=%d", task.TaskDescription(), task.TaskID())
 }
 
 func (hdlr *Handler) handleMessage(message *tgbotapi.Message) (map[ChatID]string, error) {

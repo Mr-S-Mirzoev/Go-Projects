@@ -7,7 +7,7 @@ type Task interface {
 	AssignedTo() (UserData, error)
 	CreatedBy() UserData
 	TaskDescription() string
-	TaskId() int
+	TaskID() int
 }
 
 type TaskStruct struct {
@@ -55,6 +55,6 @@ func (t *TaskStruct) TaskDescription() string {
 	return t.Description
 }
 
-func (t *TaskStruct) TaskId() int {
+func (t *TaskStruct) TaskID() int {
 	return t.ID
 }

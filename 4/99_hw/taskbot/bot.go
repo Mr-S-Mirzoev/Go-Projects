@@ -81,9 +81,9 @@ func startTaskBot(ctx context.Context) error {
 			continue
 		}
 
-		for chatId, messageText := range replies {
+		for chatID, messageText := range replies {
 			msg := tgbotapi.NewMessage(
-				int64(chatId),
+				int64(chatID),
 				messageText,
 			)
 			_, err := bot.Send(msg)
