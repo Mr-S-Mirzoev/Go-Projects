@@ -47,16 +47,14 @@ func startTaskBot(ctx context.Context) error {
 	fmt.Println("start listen :" + port)
 
 	hdlr := Handler{
-		Mngr: TaskManagerInMemory{
-			lastId: 0,
-		},
+		Mngr: &TaskManagerInMemory{},
 	}
 
 	// получаем все обновления из канала updates
 	for update := range updates {
 		log.Printf("upd: %#v\n", update)
 
-		reply, err := hdlr.handleMessage(update.Message)
+		replies, err := hdlr.handleMessage(update.Message)
 		if err != nil {
 			msg := tgbotapi.NewMessage(
 				update.Message.Chat.ID,

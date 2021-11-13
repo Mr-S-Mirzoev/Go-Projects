@@ -1,13 +1,11 @@
 package main
 
-import "fmt"
-
 type Task interface {
 	// Returns if we have to notify anyone or not
-	AssignTo(string) (string, bool)
+	AssignTo(UserData) (UserData, bool)
 	Assigned() bool
-	AssignedTo() (string, error)
-	CreatedBy() string
+	AssignedTo() (UserData, error)
+	CreatedBy() UserData
 	TaskDescription() string
 	TaskId() int
 }
@@ -15,15 +13,15 @@ type Task interface {
 type TaskStruct struct {
 	ID          int
 	Description string
-	Creator     string
-	Assignee    string
+	Creator     UserData
+	Assignee    UserData
 }
 
-func (t *TaskStruct) AssignTo(newAssignee string) (string, bool) {
+func (t *TaskStruct) AssignTo(newAssignee UserData) (UserData, bool) {
 	oldAssignee := t.Assignee
 	if !t.Assigned() || newAssignee == oldAssignee {
 		t.Assignee = newAssignee
-		return "", false
+		return UserData{}, false
 	}
 
 	t.Assignee = newAssignee
@@ -31,18 +29,20 @@ func (t *TaskStruct) AssignTo(newAssignee string) (string, bool) {
 }
 
 func (t *TaskStruct) Assigned() bool {
-	return t.Assignee != ""
+	return t.Assignee.UserNick != ""
 }
 
-func (t *TaskStruct) AssignedTo() (string, error) {
+func (t *TaskStruct) AssignedTo() (UserData, error) {
 	if !t.Assigned() {
-		return "", fmt.Errorf("Task %d hasn't been assigned yet", t.ID)
+		return UserData{}, NotAssignedError{
+			TaskID: t.ID,
+		}
 	}
 
 	return t.Assignee, nil
 }
 
-func (t *TaskStruct) CreatedBy() string {
+func (t *TaskStruct) CreatedBy() UserData {
 	return t.Creator
 }
 
