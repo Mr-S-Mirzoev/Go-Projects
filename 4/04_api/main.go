@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"sync"
 
-	"gitlab.com/mailru-go/lectures-2021-2/4/04_api/handlers"
+	"gitlab.com/sergeymirzoev/lectures-2021-2/4/04_api/handlers"
 )
 
 // GET - получение
