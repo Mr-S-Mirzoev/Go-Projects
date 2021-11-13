@@ -9,8 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	tmngr "gitlab.com/sergeymirzoev/lectures-2021-2/4/99_hw/taskbot/task_manager"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 )
 
 var (
@@ -48,14 +47,16 @@ func startTaskBot(ctx context.Context) error {
 	fmt.Println("start listen :" + port)
 
 	hdlr := Handler{
-		Mngr: tmngr.TaskManager,
+		Mngr: TaskManagerInMemory{
+			lastId: 0,
+		},
 	}
 
 	// получаем все обновления из канала updates
 	for update := range updates {
 		log.Printf("upd: %#v\n", update)
 
-		reply, err := handleMessage(update.Message)
+		reply, err := hdlr.handleMessage(update.Message)
 		if err != nil {
 			msg := tgbotapi.NewMessage(
 				update.Message.Chat.ID,
