@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	tmngr "./task_manager"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	tmngr "gitlab.com/sergeymirzoev/lectures-2021-2/4/99_hw/taskbot/task_manager"
 )
 
 type Handler struct {

@@ -1,4 +1,4 @@
-package taskmanager
+package task_manager
 
 type TaskManager interface {
 	CreateTask(string, string, string) Task
