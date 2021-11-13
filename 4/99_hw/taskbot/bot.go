@@ -13,11 +13,8 @@ import (
 )
 
 var (
-	// @BotFather в телеграме даст вам это
-	BotToken = "XXX"
-
-	// урл выдаст вам нгрок или хероку
-	WebhookURL = "https://525f2cb5.ngrok.io"
+	WebhookURL = "http://127.0.0.1:8081"
+	BotToken   = "_golangcourse_test"
 )
 
 func startTaskBot(ctx context.Context) error {
@@ -39,7 +36,7 @@ func startTaskBot(ctx context.Context) error {
 	// Get the PORT from env vars cause it's implicitly set by Heroku
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8081"
 	}
 	go func() {
 		log.Fatalln("http err:", http.ListenAndServe(":"+port, nil))
@@ -47,7 +44,10 @@ func startTaskBot(ctx context.Context) error {
 	fmt.Println("start listen :" + port)
 
 	hdlr := Handler{
-		Mngr: &TaskManagerInMemory{},
+		Mngr: &TaskManagerInMemory{
+			Tasks:  make(map[int]Task),
+			LastId: 1,
+		},
 	}
 
 	// получаем все обновления из канала updates
@@ -56,23 +56,29 @@ func startTaskBot(ctx context.Context) error {
 
 		replies, err := hdlr.handleMessage(update.Message)
 		if err != nil {
+			logErrorString := fmt.Sprintf(
+				"Произошла ошибка для чата %d при сообщении %s: %v",
+				update.Message.Chat.ID,
+				update.Message.Text,
+				err,
+			)
+			log.Fatal(logErrorString)
 			msg := tgbotapi.NewMessage(
 				update.Message.Chat.ID,
-				`there is only Habr feed availible`,
+				"Произошла неизвестная ошибка",
 			)
-
-			msg.ReplyMarkup = &tgbotapi.ReplyKeyboardMarkup{
-				Keyboard: [][]tgbotapi.KeyboardButton{
-					{
-						{
-							Text: "Habr",
-						},
-					},
-				},
-			}
 			bot.Send(msg)
 			continue
 		}
+
+		for chatId, messageText := range replies {
+			msg := tgbotapi.NewMessage(
+				int64(chatId),
+				messageText,
+			)
+			bot.Send(msg)
+		}
+		continue
 	}
 
 	return nil

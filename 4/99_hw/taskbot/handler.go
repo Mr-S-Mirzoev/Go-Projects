@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -41,26 +42,34 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 	}
 
 	returnString := ""
-	for i, task := range tasks {
-		if i != 0 {
-			returnString += "\n"
+	sortedTasks := make([]Task, 0, len(tasks))
+	sortedTasks = append(sortedTasks, tasks...)
+	sort.Slice(sortedTasks, func(i, j int) bool { return sortedTasks[i].TaskId() < sortedTasks[j].TaskId() })
+
+	first := true
+	for _, task := range sortedTasks {
+		if !first {
+			returnString += "\n\n"
+		} else {
+			first = false
 		}
 
-		returnString += fmt.Sprintf("%d. %s by @%s\n", task.TaskId(), task.TaskDescription(), task.CreatedBy())
+		returnString += fmt.Sprintf("%d. %s by @%s", task.TaskId(), task.TaskDescription(), task.CreatedBy().UserNick)
 
 		if task.Assigned() {
-			if typeOfHandler == ALL {
+			if typeOfHandler == ALL || typeOfHandler == MY {
 				assignee, _ := task.AssignedTo()
 				if assignee == user {
-					returnString += fmt.Sprintf("assignee: я\n")
+					if typeOfHandler != MY {
+						returnString += "\nassignee: я"
+					}
+					returnString += fmt.Sprintf("\n/unassign_%d /resolve_%d", task.TaskId(), task.TaskId())
 				} else {
-					returnString += fmt.Sprintf("assignee: @%s\n", assignee)
+					returnString += fmt.Sprintf("\nassignee: @%s", assignee.UserNick)
 				}
 			}
-
-			returnString += fmt.Sprintf("/unassign_%d /resolve_%d\n", task.TaskId(), task.TaskId())
 		} else {
-			returnString += fmt.Sprintf("/assign_%d\n", task.TaskId())
+			returnString += fmt.Sprintf("\n/assign_%d", task.TaskId())
 		}
 	}
 
@@ -86,7 +95,7 @@ func (hdlr *Handler) handleAssign(taskId int, user UserData) (map[ChatID]string,
 		user.ID: fmt.Sprintf("Задача \"%s\" назначена на вас", taskDescription),
 	}
 
-	if shouldNotify {
+	if shouldNotify && user.ID != oldAssignee.ID {
 		returnMap[oldAssignee.ID] = fmt.Sprintf(
 			"Задача \"%s\" назначена на @%s",
 			taskDescription,
@@ -97,8 +106,9 @@ func (hdlr *Handler) handleAssign(taskId int, user UserData) (map[ChatID]string,
 	return returnMap, nil
 }
 
+// TODO: Merge Unassign and Resolve handlers
 func (hdlr *Handler) handleUnassign(taskId int, user UserData) (map[ChatID]string, error) {
-	err := hdlr.Mngr.Unassign(taskId, user)
+	creator, shouldNotify, err := hdlr.Mngr.Unassign(taskId, user)
 	if err != nil {
 		switch err.(type) {
 		case NoSuchIDError:
@@ -117,14 +127,51 @@ func (hdlr *Handler) handleUnassign(taskId int, user UserData) (map[ChatID]strin
 			return nil, err
 		}
 	}
+
+	returnMap := map[ChatID]string{user.ID: "Принято"}
+	if shouldNotify {
+		taskDescription, _ := hdlr.Mngr.GetTaskDescriptionByID(taskId)
+		returnMap[creator.ID] = fmt.Sprintf("Задача \"%s\" осталась без исполнителя", taskDescription)
+	}
+
+	return returnMap, nil
 }
 
-func (hdlr *Handler) handleResolve(message *tgbotapi.Message) (string, error) {
-	return "", nil
+func (hdlr *Handler) handleResolve(taskId int, user UserData) (map[ChatID]string, error) {
+	taskDescription, _ := hdlr.Mngr.GetTaskDescriptionByID(taskId)
+	creator, shouldNotify, err := hdlr.Mngr.Resolve(taskId, user)
+	if err != nil {
+		switch err.(type) {
+		case NoSuchIDError:
+			return map[ChatID]string{
+				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskId),
+			}, nil
+		case NotMyTaskError:
+			return map[ChatID]string{
+				user.ID: notMyTask,
+			}, nil
+		case NotAssignedError:
+			return map[ChatID]string{
+				user.ID: notAssigned,
+			}, nil
+		default:
+			return nil, err
+		}
+	}
+
+	returnMap := map[ChatID]string{
+		user.ID: fmt.Sprintf("Задача \"%s\" выполнена", taskDescription),
+	}
+	if shouldNotify {
+		returnMap[creator.ID] = fmt.Sprintf("Задача \"%s\" выполнена @%s", taskDescription, user.UserNick)
+	}
+
+	return returnMap, nil
 }
 
-func (hdlr *Handler) handleNew(message *tgbotapi.Message) (string, error) {
-	return "", nil
+func (hdlr *Handler) handleNew(taskDescription string, user UserData) string {
+	task := hdlr.Mngr.CreateTask(taskDescription, user)
+	return fmt.Sprintf("Задача \"%s\" создана, id=%d", task.TaskDescription(), task.TaskId())
 }
 
 func (hdlr *Handler) handleMessage(message *tgbotapi.Message) (map[ChatID]string, error) {
@@ -175,7 +222,7 @@ func (hdlr *Handler) handleMessage(message *tgbotapi.Message) (map[ChatID]string
 			case "/unassign":
 				return hdlr.handleUnassign(id, userData)
 			case "/resolve":
-				hdlr.handleResolve(message)
+				return hdlr.handleResolve(id, userData)
 			default:
 				return nil, fmt.Errorf("Unknown command with id: %s", command)
 			}
@@ -185,9 +232,9 @@ func (hdlr *Handler) handleMessage(message *tgbotapi.Message) (map[ChatID]string
 			return nil, fmt.Errorf("Unknown command with multiple words: %s", commandWithArgs[0])
 		}
 
-		result, err := hdlr.handleNew(message)
-		return []string{
-			result,
-		}, err
+		result := hdlr.handleNew(strings.Join(commandWithArgs[1:], " "), userData)
+		return map[ChatID]string{
+			userData.ID: result,
+		}, nil
 	}
 }

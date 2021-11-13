@@ -19,12 +19,17 @@ type TaskStruct struct {
 
 func (t *TaskStruct) AssignTo(newAssignee UserData) (UserData, bool) {
 	oldAssignee := t.Assignee
-	if !t.Assigned() || newAssignee == oldAssignee {
-		t.Assignee = newAssignee
+	wasAssigned := t.Assigned()
+	t.Assignee = newAssignee
+
+	if !wasAssigned {
+		return t.Creator, true
+	}
+
+	if newAssignee.ID == oldAssignee.ID {
 		return UserData{}, false
 	}
 
-	t.Assignee = newAssignee
 	return oldAssignee, true
 }
 

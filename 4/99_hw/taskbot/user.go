@@ -11,7 +11,7 @@ type UserData struct {
 
 func FromTelegramMessage(message *tgbotapi.Message) UserData {
 	return UserData{
-		ID:       message.From.ID,
+		ID:       ChatID(message.From.ID),
 		UserNick: message.From.UserName,
 	}
 }
