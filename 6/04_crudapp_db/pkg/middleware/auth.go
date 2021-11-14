@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"context"
-	// "fmt"
 	"net/http"
 
 	"crudapp/pkg/session"
@@ -31,7 +29,7 @@ func Auth(sm *session.SessionsManager, next http.Handler) http.Handler {
 			http.Redirect(w, r, "/", 302)
 			return
 		}
-		ctx := context.WithValue(r.Context(), session.SessionKey, sess)
+		ctx := session.ContextWithSession(r.Context(), sess)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -4,15 +4,15 @@ import (
 	"database/sql"
 )
 
-type ItemRepository struct {
+type ItemMysqlRepository struct {
 	DB *sql.DB
 }
 
-func NewRepository(db *sql.DB) *ItemRepository {
-	return &ItemRepository{DB: db}
+func NewMysqlRepo(db *sql.DB) *ItemMysqlRepository {
+	return &ItemMysqlRepository{DB: db}
 }
 
-func (repo *ItemRepository) GetAll() ([]*Item, error) {
+func (repo *ItemMysqlRepository) GetAll() ([]*Item, error) {
 	items := []*Item{}
 	rows, err := repo.DB.Query("SELECT id, title, updated FROM items")
 	if err != nil {
@@ -30,7 +30,7 @@ func (repo *ItemRepository) GetAll() ([]*Item, error) {
 	return items, nil
 }
 
-func (repo *ItemRepository) GetByID(id int64) (*Item, error) {
+func (repo *ItemMysqlRepository) GetByID(id int64) (*Item, error) {
 	post := &Item{}
 	// QueryRow сам закрывает коннект
 	err := repo.DB.
@@ -42,7 +42,7 @@ func (repo *ItemRepository) GetByID(id int64) (*Item, error) {
 	return post, nil
 }
 
-func (repo *ItemRepository) Add(elem *Item) (int64, error) {
+func (repo *ItemMysqlRepository) Add(elem *Item) (int64, error) {
 	result, err := repo.DB.Exec(
 		"INSERT INTO items (`title`, `description`) VALUES (?, ?)",
 		elem.Title,
@@ -54,7 +54,7 @@ func (repo *ItemRepository) Add(elem *Item) (int64, error) {
 	return result.LastInsertId()
 }
 
-func (repo *ItemRepository) Update(elem *Item) (int64, error) {
+func (repo *ItemMysqlRepository) Update(elem *Item) (int64, error) {
 	result, err := repo.DB.Exec(
 		"UPDATE items SET"+
 			"`title` = ?"+
@@ -72,7 +72,7 @@ func (repo *ItemRepository) Update(elem *Item) (int64, error) {
 	return result.RowsAffected()
 }
 
-func (repo *ItemRepository) Delete(id int64) (int64, error) {
+func (repo *ItemMysqlRepository) Delete(id int64) (int64, error) {
 	result, err := repo.DB.Exec(
 		"DELETE FROM items WHERE id = ?",
 		id,

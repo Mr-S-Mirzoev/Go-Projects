@@ -13,7 +13,7 @@ import (
 type UserHandler struct {
 	Tmpl     *template.Template
 	Logger   *zap.SugaredLogger
-	UserRepo user.UserRepoInterface
+	UserRepo user.UserRepo
 	Sessions *session.SessionsManager
 }
 

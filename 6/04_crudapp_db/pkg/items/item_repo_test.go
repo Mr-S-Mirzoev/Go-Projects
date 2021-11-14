@@ -35,7 +35,7 @@ func TestGetByID(t *testing.T) {
 		WithArgs(elemID).
 		WillReturnRows(rows)
 
-	repo := &ItemRepository{
+	repo := &ItemMysqlRepository{
 		DB: db,
 	}
 	item, err := repo.GetByID(elemID)
@@ -96,7 +96,7 @@ func TestCreate(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := &ItemRepository{
+	repo := &ItemMysqlRepository{
 		DB: db,
 	}
 

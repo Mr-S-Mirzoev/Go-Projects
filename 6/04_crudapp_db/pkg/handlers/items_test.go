@@ -22,7 +22,7 @@ func TestItemsHandlerList(t *testing.T) {
 	// Finish сравнит последовательсноть вызовов и выведет ошибку если последовательность другая
 	defer ctrl.Finish()
 
-	st := NewMockItemRepositoryInterface(ctrl)
+	st := items.NewMockItemRepo(ctrl)
 	service := &ItemsHandler{
 		ItemsRepo: st,
 		Logger:    zap.NewNop().Sugar(), // не пишет логи
