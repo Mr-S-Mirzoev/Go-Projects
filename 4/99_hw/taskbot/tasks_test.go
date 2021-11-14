@@ -7,9 +7,12 @@ import (
 	"reflect"
 	"strconv"
 	"sync/atomic"
+
 	// "encoding/json"
 	"fmt"
-	"gopkg.in/telegram-bot-api.v4"
+
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
+
 	// "io/ioutil"
 	"net/http"
 	"net/http/httptest"
