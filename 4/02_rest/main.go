@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"gitlab.com/mailru-go/lectures-2021-2/4/02_rest/storage"
+	"gitlab.com/sergeymirzoev/lectures-2021-2/4/02_rest/storage"
 
 	"github.com/gorilla/mux"
 )
