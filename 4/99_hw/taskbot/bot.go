@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	WebhookURL = "http://127.0.0.1:8081"
-	BotToken   = "_golangcourse_test"
+	WebhookURL = "https://dbd9-83-242-55-252.ngrok.io"
+	BotToken   = "2146592204:AAHcvCly8lQJ0NxbS3mdy1uLtH1LGfDOJ48"
 )
 
 func startTaskBot(ctx context.Context) error {
@@ -33,8 +33,19 @@ func startTaskBot(ctx context.Context) error {
 
 	updates := bot.ListenForWebhook("/")
 
-	if ctx == nil {
-		log.Fatal("Just to disable go-lint error")
+	http.HandleFunc("/state", func(w http.ResponseWriter, r *http.Request) {
+		if ctx == nil {
+			_, err = w.Write([]byte("Troubles with context"))
+		} else {
+			_, err = w.Write([]byte("all is working"))
+		}
+		log.Fatalf("http err: %v\n", err)
+	})
+
+	useNgrok := os.Getenv("USE_NGROK")
+	if useNgrok == "" {
+		WebhookURL = "http://127.0.0.1:8081"
+		BotToken = "_golangcourse_test"
 	}
 
 	// Get the PORT from env vars cause it's implicitly set by Heroku
@@ -52,50 +63,19 @@ func startTaskBot(ctx context.Context) error {
 			Tasks:  make(map[int]Task),
 			LastID: 1,
 		},
+		BotHandle: bot,
 	}
 
 	// получаем все обновления из канала updates
 	for update := range updates {
 		log.Printf("upd: %#v\n", update)
 
-		replies, err := hdlr.handleMessage(update.Message)
-		if err != nil {
-			log.Fatalf(
-				"Произошла ошибка для чата %d при сообщении %s: %v",
-				update.Message.Chat.ID,
-				update.Message.Text,
-				err,
-			)
-			msg := tgbotapi.NewMessage(
-				update.Message.Chat.ID,
-				"Произошла неизвестная ошибка",
-			)
-			_, err := bot.Send(msg)
-			if err != nil {
-				log.Fatalf(
-					"Failed to send message: %v : %v",
-					msg,
-					err,
-				)
-			}
+		if update.Message == nil {
+			log.Printf("Got null message")
 			continue
 		}
 
-		for chatID, messageText := range replies {
-			msg := tgbotapi.NewMessage(
-				int64(chatID),
-				messageText,
-			)
-			_, err := bot.Send(msg)
-			if err != nil {
-				log.Fatalf(
-					"Failed to send message: %v : %v",
-					msg,
-					err,
-				)
-			}
-		}
-		continue
+		hdlr.handleMessage(update.Message)
 	}
 
 	return nil

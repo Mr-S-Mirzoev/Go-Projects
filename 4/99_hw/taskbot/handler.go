@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -10,21 +11,79 @@ import (
 )
 
 type Handler struct {
-	Mngr TaskManager
+	Mngr      TaskManager
+	BotHandle *tgbotapi.BotAPI
 }
 
 const (
-	noTasks         = `Нет задач`
-	notMyTask       = `Задача не на вас`
-	notAssigned     = `Задача не назначена`
-	ALL         int = iota
+	noTasks     = `Нет задач`
+	notMyTask   = `Задача не на вас`
+	notAssigned = `Задача не назначена`
+)
+
+const (
+	ALL int = iota
 	MY
 	OWNER
 )
 
-func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, error) {
+const (
+	ASSIGN int = iota
+	UNASSIGN
+	RESOLVE
+)
+
+func commandToHandlerType(command string) int {
+	switch command {
+	case "/assign":
+		return ASSIGN
+	case "/tasks":
+		return ALL
+	case "/my":
+		return MY
+	case "/unassign":
+		return UNASSIGN
+	case "/owner":
+		return OWNER
+	case "/resolve":
+		return RESOLVE
+	}
+	return -1 // unreached code
+}
+
+func actOnError(err error, taskID int) (string, error) {
+	switch err.(type) {
+	case NoSuchIDError:
+		return fmt.Sprintf("Нет такой задачи с номером: %d", taskID), nil
+	case NotMyTaskError:
+		return notMyTask, nil
+	case NotAssignedError:
+		return notAssigned, nil
+	default:
+		return "", err
+	}
+}
+
+func (hdlr *Handler) sendMessage(chatID ChatID, messageText string) {
+	msg := tgbotapi.NewMessage(
+		int64(chatID),
+		messageText,
+	)
+
+	_, err := hdlr.BotHandle.Send(msg)
+	if err != nil {
+		log.Fatalf(
+			"Failed to send message: %v : %v",
+			msg,
+			err,
+		)
+	}
+}
+
+func (hdlr *Handler) handleTasks(user UserData, typeOfGetter int) error {
 	var tasks []Task
-	switch typeOfHandler {
+
+	switch typeOfGetter {
 	case ALL:
 		tasks = hdlr.Mngr.GetAllTasks()
 	case MY:
@@ -32,13 +91,14 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 	case OWNER:
 		tasks = hdlr.Mngr.GetTasksCreatedByUser(user.UserNick)
 	default:
-		return "", UnknownHandlerTypeError{
-			HandlerType: typeOfHandler,
+		return UnknownHandlerTypeError{
+			HandlerType: typeOfGetter,
 		}
 	}
 
 	if len(tasks) == 0 {
-		return noTasks, nil
+		hdlr.sendMessage(user.ID, noTasks)
+		return nil
 	}
 
 	returnString := ""
@@ -54,156 +114,117 @@ func (hdlr *Handler) handleTasks(user UserData, typeOfHandler int) (string, erro
 			first = false
 		}
 
-		returnString += fmt.Sprintf("%d. %s by @%s", task.TaskID(), task.TaskDescription(), task.CreatedBy().UserNick)
-
-		if task.Assigned() {
-			if typeOfHandler == ALL || typeOfHandler == MY {
-				assignee, err := task.AssignedTo()
-				if err != nil {
-					fmt.Printf(
-						"Somehow error with assigned to occured even though taskId: %d was checked: %v",
-						task.TaskID(),
-						err,
-					)
-				}
-
-				if assignee == user {
-					if typeOfHandler != MY {
-						returnString += "\nassignee: я"
-					}
-					returnString += fmt.Sprintf("\n/unassign_%d /resolve_%d", task.TaskID(), task.TaskID())
-				} else {
-					returnString += fmt.Sprintf("\nassignee: @%s", assignee.UserNick)
-				}
-			}
-		} else {
-			returnString += fmt.Sprintf("\n/assign_%d", task.TaskID())
-		}
+		replyTemplate := CreateTasksReplyTemplate(task)
+		returnString += replyTemplate.String(typeOfGetter, user)
 	}
 
-	return returnString, nil
+	hdlr.sendMessage(user.ID, returnString)
+	return nil
 }
 
-func (hdlr *Handler) handleAssign(taskID int, user UserData) (map[ChatID]string, error) {
-	oldAssignee, shouldNotify, err := hdlr.Mngr.Assign(taskID, user)
-	if err != nil {
-		_, ok := err.(NoSuchIDError)
-		if ok {
-			return map[ChatID]string{
-				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskID),
-			}, nil
-		}
-
-		return nil, err
-	}
+func (hdlr *Handler) handleTaskManipulation(taskID int, user UserData, typeOfTaskManipulation int) error {
+	var err error
+	var oldAssignee UserData
+	var shouldNotify bool
 
 	taskDescription, err := hdlr.Mngr.GetTaskDescriptionByID(taskID)
 	if err != nil {
-		fmt.Printf(
-			"Somehow error with get description occured even though taskId: %d was checked: %v",
-			taskID,
-			err,
-		)
+		fmt.Printf("Imposible error occured: %v", err)
 	}
 
-	returnMap := map[ChatID]string{
-		user.ID: fmt.Sprintf("Задача \"%s\" назначена на вас", taskDescription),
+	switch typeOfTaskManipulation {
+	case ASSIGN:
+		oldAssignee, shouldNotify, err = hdlr.Mngr.Assign(taskID, user)
+	case UNASSIGN:
+		oldAssignee, shouldNotify, err = hdlr.Mngr.Unassign(taskID, user)
+	case RESOLVE:
+		oldAssignee, shouldNotify, err = hdlr.Mngr.Resolve(taskID, user)
+	default:
+		return UnknownHandlerTypeError{
+			HandlerType: typeOfTaskManipulation,
+		}
 	}
+
+	var messageText string
+	if err != nil {
+		messageText, err = actOnError(err, taskID)
+		if err != nil {
+			return err
+		}
+
+		hdlr.sendMessage(user.ID, messageText)
+		return nil
+	}
+
+	switch typeOfTaskManipulation {
+	case ASSIGN:
+		messageText = fmt.Sprintf(
+			"Задача \"%s\" назначена на вас",
+			taskDescription,
+		)
+	case UNASSIGN:
+		messageText = "Принято"
+	case RESOLVE:
+		messageText = fmt.Sprintf(
+			"Задача \"%s\" выполнена",
+			taskDescription,
+		)
+	default:
+		return UnknownHandlerTypeError{
+			HandlerType: typeOfTaskManipulation,
+		}
+	}
+
+	hdlr.sendMessage(user.ID, messageText)
 
 	if shouldNotify && user.ID != oldAssignee.ID {
-		returnMap[oldAssignee.ID] = fmt.Sprintf(
-			"Задача \"%s\" назначена на @%s",
-			taskDescription,
-			user.UserNick,
-		)
-	}
-
-	return returnMap, nil
-}
-
-// TODO: Merge Unassign and Resolve handlers
-func (hdlr *Handler) handleUnassign(taskID int, user UserData) (map[ChatID]string, error) {
-	creator, shouldNotify, err := hdlr.Mngr.Unassign(taskID, user)
-	if err != nil {
-		switch err.(type) {
-		case NoSuchIDError:
-			return map[ChatID]string{
-				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskID),
-			}, nil
-		case NotMyTaskError:
-			return map[ChatID]string{
-				user.ID: notMyTask,
-			}, nil
-		case NotAssignedError:
-			return map[ChatID]string{
-				user.ID: notAssigned,
-			}, nil
-		default:
-			return nil, err
-		}
-	}
-
-	returnMap := map[ChatID]string{user.ID: "Принято"}
-	if shouldNotify {
-		taskDescription, err := hdlr.Mngr.GetTaskDescriptionByID(taskID)
-		if err != nil {
-			fmt.Printf(
-				"Somehow error with get description occured even though taskID: %d was checked: %v",
-				taskID,
-				err,
+		switch typeOfTaskManipulation {
+		case ASSIGN:
+			messageText = fmt.Sprintf(
+				"Задача \"%s\" назначена на @%s",
+				taskDescription,
+				user.UserNick,
 			)
-		}
-		returnMap[creator.ID] = fmt.Sprintf("Задача \"%s\" осталась без исполнителя", taskDescription)
-	}
-
-	return returnMap, nil
-}
-
-func (hdlr *Handler) handleResolve(taskID int, user UserData) (map[ChatID]string, error) {
-	taskDescription, err := hdlr.Mngr.GetTaskDescriptionByID(taskID)
-	if err != nil {
-		fmt.Printf(
-			"Error with get description for taskID %d occured, will be handled afterwards: %v",
-			taskID,
-			err,
-		)
-	}
-	creator, shouldNotify, err := hdlr.Mngr.Resolve(taskID, user)
-	if err != nil {
-		switch err.(type) {
-		case NoSuchIDError:
-			return map[ChatID]string{
-				user.ID: fmt.Sprintf("Нет такой задачи с номером: %d", taskID),
-			}, nil
-		case NotMyTaskError:
-			return map[ChatID]string{
-				user.ID: notMyTask,
-			}, nil
-		case NotAssignedError:
-			return map[ChatID]string{
-				user.ID: notAssigned,
-			}, nil
+		case UNASSIGN:
+			messageText = fmt.Sprintf(
+				"Задача \"%s\" осталась без исполнителя",
+				taskDescription,
+			)
+		case RESOLVE:
+			messageText = fmt.Sprintf(
+				"Задача \"%s\" выполнена @%s",
+				taskDescription,
+				user.UserNick,
+			)
 		default:
-			return nil, err
+			return UnknownHandlerTypeError{
+				HandlerType: typeOfTaskManipulation,
+			}
 		}
+
+		hdlr.sendMessage(oldAssignee.ID, messageText)
 	}
 
-	returnMap := map[ChatID]string{
-		user.ID: fmt.Sprintf("Задача \"%s\" выполнена", taskDescription),
-	}
-	if shouldNotify {
-		returnMap[creator.ID] = fmt.Sprintf("Задача \"%s\" выполнена @%s", taskDescription, user.UserNick)
-	}
-
-	return returnMap, nil
+	return nil
 }
 
-func (hdlr *Handler) handleNew(taskDescription string, user UserData) string {
+func (hdlr *Handler) handleNew(taskDescription string, user UserData) {
 	task := hdlr.Mngr.CreateTask(taskDescription, user)
-	return fmt.Sprintf("Задача \"%s\" создана, id=%d", task.TaskDescription(), task.TaskID())
+	messageText := fmt.Sprintf("Задача \"%s\" создана, id=%d", task.TaskDescription(), task.TaskID())
+	hdlr.sendMessage(user.ID, messageText)
 }
 
-func (hdlr *Handler) handleMessage(message *tgbotapi.Message) (map[ChatID]string, error) {
+func (hdlr *Handler) handleUnknownError(err error, chatID ChatID, messageText string) {
+	log.Printf(
+		"Произошла ошибка для чата %d при сообщении %s: %v",
+		chatID,
+		messageText,
+		err,
+	)
+	hdlr.sendMessage(chatID, "Произошла неизвестная ошибка")
+}
+
+func (hdlr *Handler) handleMessage(message *tgbotapi.Message) {
 	/*
 	* `/tasks`
 	* `/new XXX YYY ZZZ` - создаёт новую задачу
@@ -215,55 +236,69 @@ func (hdlr *Handler) handleMessage(message *tgbotapi.Message) (map[ChatID]string
 	 */
 	userData := FromTelegramMessage(message)
 
-	switch message.Text {
-	case "/tasks":
-		result, err := hdlr.handleTasks(userData, ALL)
-		return map[ChatID]string{
-			userData.ID: result,
-		}, err
-	case "/my":
-		result, err := hdlr.handleTasks(userData, MY)
-		return map[ChatID]string{
-			userData.ID: result,
-		}, err
-	case "/owner":
-		result, err := hdlr.handleTasks(userData, OWNER)
-		return map[ChatID]string{
-			userData.ID: result,
-		}, err
-	default:
-		commandWithArgs := strings.Split(message.Text, " ")
-		if len(commandWithArgs) == 1 {
-			commandWithArgs = strings.Split(commandWithArgs[0], "_")
+	if message.Text == "/tasks" || message.Text == "/my" || message.Text == "/owner" {
+		err := hdlr.handleTasks(
+			userData,
+			commandToHandlerType(message.Text),
+		)
+
+		if err != nil {
+			hdlr.handleUnknownError(
+				err,
+				ChatID(message.Chat.ID),
+				message.Text,
+			)
+		}
+	} else {
+		if !strings.Contains(message.Text, " ") {
+			commandWithArgs := strings.Split(message.Text, "_")
+
 			if len(commandWithArgs) != 2 {
-				return nil, fmt.Errorf("wrong command: %s", message.Text)
+				hdlr.handleUnknownError(
+					fmt.Errorf("wrong command: %s", message.Text),
+					ChatID(message.Chat.ID),
+					message.Text,
+				)
+				return
 			}
 
 			id, err := strconv.Atoi(commandWithArgs[1])
 			if err != nil {
-				return nil, fmt.Errorf("failed to convert ID to int in: %s (%v)", message.Text, err)
+				hdlr.handleUnknownError(
+					fmt.Errorf("failed to convert ID to int in: %s (%v)", message.Text, err),
+					ChatID(message.Chat.ID),
+					message.Text,
+				)
+				return
 			}
 
 			command := commandWithArgs[0]
-			switch command {
-			case "/assign":
-				return hdlr.handleAssign(id, userData)
-			case "/unassign":
-				return hdlr.handleUnassign(id, userData)
-			case "/resolve":
-				return hdlr.handleResolve(id, userData)
-			default:
-				return nil, fmt.Errorf("unknown command with id: %s", command)
+			if command == "/assign" || command == "/unassign" || command == "/resolve" {
+				err = hdlr.handleTaskManipulation(id, userData, commandToHandlerType(command))
+			} else {
+				err = fmt.Errorf("unknown command with id: %s", command)
+			}
+
+			if err != nil {
+				hdlr.handleUnknownError(
+					err,
+					ChatID(message.Chat.ID),
+					message.Text,
+				)
+				return
+			}
+		} else {
+			commandWithArgs := strings.Split(message.Text, " ")
+
+			if commandWithArgs[0] != "/new" {
+				hdlr.handleUnknownError(
+					fmt.Errorf("unknown command with multiple words: %s", commandWithArgs[0]),
+					ChatID(message.Chat.ID),
+					message.Text,
+				)
+			} else {
+				hdlr.handleNew(strings.Join(commandWithArgs[1:], " "), userData)
 			}
 		}
-
-		if commandWithArgs[0] != "/new" {
-			return nil, fmt.Errorf("unknown command with multiple words: %s", commandWithArgs[0])
-		}
-
-		result := hdlr.handleNew(strings.Join(commandWithArgs[1:], " "), userData)
-		return map[ChatID]string{
-			userData.ID: result,
-		}, nil
 	}
 }
