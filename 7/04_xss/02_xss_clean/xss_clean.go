@@ -11,7 +11,7 @@ import (
 func main() {
 	sanitizer := bluemonday.UGCPolicy()
 
-	comment := `<a onblur="alert(document.сookie)" href="https://www.mail.ru">Mail.ru</a>`
+	comment := `<a onclick="alert(document.сookie)" href="https://www.mail.ru">Mail.ru</a>`
 	fmt.Printf("comment before sanitizing: %s\n", comment)
 
 	comment = sanitizer.Sanitize(comment)

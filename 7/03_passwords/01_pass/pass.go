@@ -27,7 +27,7 @@ func PasswordMD5(plainPassword []byte) []byte {
 
 // bcrypt where PBKDF2 or scrypt support is not available.
 func PasswordBcrypt(plainPassword []byte) []byte {
-	passBcrypt, _ := bcrypt.GenerateFromPassword(plainPassword, 14)
+	passBcrypt, _ := bcrypt.GenerateFromPassword(plainPassword, 10)
 	return passBcrypt
 }
 

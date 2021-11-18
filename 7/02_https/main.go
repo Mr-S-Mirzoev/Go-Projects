@@ -6,8 +6,8 @@ func main() {
 	http.HandleFunc("/some_api", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("123"))
 	})
-	http.ListenAndServe(":80", nil)
-	// http.ListenAndServeTLS(":80", "localhost.crt", "localhost.key", nil)
+	// http.ListenAndServe(":80", nil)
+	http.ListenAndServeTLS(":80", "localhost.crt", "localhost.key", nil)
 }
 
 //* PLAIN

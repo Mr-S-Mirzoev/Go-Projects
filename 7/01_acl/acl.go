@@ -12,8 +12,8 @@ import (
 func main() {
 	ur := &UsersRepo{
 		db: map[string]*User{
-			"admin@mail.ru": {1, "admin"},
-			"user@mail.ru":  {1, "member"},
+			"admin@mail.ru": {1, "admin", "555"},
+			"user@mail.ru":  {2, "member", "123"},
 		},
 	}
 	e, err := casbin.NewEnforcerSafe("basic_model.conf", "basic_policy.csv")
@@ -41,6 +41,7 @@ func PermissionsMiddleware(e *casbin.Enforcer, ur *UsersRepo, next http.Handler)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		v, _ := url.ParseQuery(r.URL.RawQuery)
 		email := v.Get("email")
+		// check auth and cookie/token ...
 
 		role := "anonymous"
 		user := ur.GetUser(email)
@@ -61,8 +62,9 @@ func PermissionsMiddleware(e *casbin.Enforcer, ur *UsersRepo, next http.Handler)
 }
 
 type User struct {
-	UserID int
-	Role   string
+	UserID   int
+	Role     string
+	Password string
 }
 type UsersRepo struct {
 	db map[string]*User

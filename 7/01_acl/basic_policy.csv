@@ -1,7 +1,7 @@
 p, admin, /*, *
 
 p, anonymous, /, *
-p, anonymous, /login, *
+p, anonymous, /login, POST
 
 p, member, /, *
 p, member, /member/*, *
