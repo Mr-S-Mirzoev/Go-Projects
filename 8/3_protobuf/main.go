@@ -17,6 +17,7 @@ func main() {
 
 	dataJson, _ := json.Marshal(sess)
 
+	fmt.Printf("dataJson: %s\n", string(dataJson))
 	fmt.Printf("dataJson\nlen %d\n%v\n", len(dataJson), dataJson)
 
 	/*
@@ -34,6 +35,7 @@ func main() {
 			10 // номер поля + тип
 			7  // длина данных
 				114 118 97 115 105 108 121
+
 			18 // номер поля + тип
 			6  // длина данных
 				67 104 114 111 109 101
