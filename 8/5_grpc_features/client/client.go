@@ -13,6 +13,8 @@ import (
 	"gitlab.com/mailru-go/lectures-2021-2/8/4_grpc/session"
 )
 
+// {Interceprtor} | serialization | -> request
+
 func timingInterceptor(
 	ctx context.Context,
 	method string,
@@ -34,8 +36,6 @@ func timingInterceptor(
 	return err
 }
 
-// -----
-
 type tokenAuth struct {
 	Token string
 }
@@ -49,8 +49,6 @@ func (t *tokenAuth) GetRequestMetadata(context.Context, ...string) (map[string]s
 func (c *tokenAuth) RequireTransportSecurity() bool {
 	return false
 }
-
-// -----
 
 func main() {
 
@@ -73,8 +71,6 @@ func main() {
 		"subsystem", "cli",
 	)
 	ctx = metadata.NewOutgoingContext(ctx, md)
-
-	// ----------------------------------------------------
 
 	var header, trailer metadata.MD
 

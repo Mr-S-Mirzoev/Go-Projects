@@ -30,7 +30,7 @@ func main() {
 	stream, _ := tr.EnRu(ctx)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(1)
 
 	go func(wg *sync.WaitGroup) {
 		defer wg.Done()

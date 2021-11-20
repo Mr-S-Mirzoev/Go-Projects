@@ -49,7 +49,7 @@ func main() {
 		addr: servers[0],
 	}
 
-	grcpConn, err := grpc.Dial(
+	grpcConn, err := grpc.Dial(
 		servers[0],
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
@@ -58,7 +58,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("cant connect to grpc")
 	}
-	defer grcpConn.Close()
+	defer grpcConn.Close()
 
 	if len(servers) > 1 {
 		var updates []*naming.Update
@@ -71,7 +71,7 @@ func main() {
 		nameResolver.w.inject(updates)
 	}
 
-	sessManager := session.NewAuthCheckerClient(grcpConn)
+	sessManager := session.NewAuthCheckerClient(grpcConn)
 
 	// тут мы будем периодически опрашивать консул на предмет изменений
 	go runOnlineServiceDiscovery(servers)
