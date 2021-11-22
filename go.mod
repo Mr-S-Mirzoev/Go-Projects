@@ -12,7 +12,7 @@ require (
 	github.com/garyburd/redigo v1.6.3
 	github.com/gen1us2k/go-translit v0.0.0-20160120121136-46f1a0be552c
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/golang/protobuf v1.5.0
+	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.4.2
@@ -31,7 +31,7 @@ require (
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
-	google.golang.org/grpc v1.27.0
+	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )

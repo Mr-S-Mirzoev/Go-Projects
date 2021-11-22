@@ -30,3 +30,15 @@
 
 * В этом задании нельзя использовать глобальные переменные. Всё что нам необходимо - храните в полях структуры.
 * Запускать тесты с go test -v -race
+
+как сгенерить (способ 1, новый):
+- ставим тулзу для генерации - protoc (это можно нагуглить)
+- ставим модуль go для protoc `go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26`
+- ставим модуль grpc для protoc `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1`
+- генерим (на выходе получаем 2 файла. это ок): `protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto`
+
+как сгенерить (способ 2. старый, deprecated):
+- ставим тулзу для генерации - protoc (это можно нагуглить)
+- ставим модули для генерации protobuf `go install github.com/golang/protobuf/{proto,protoc-gen-go}`
+- ставим модуль для генерации grpc `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1`
+- генерим: `protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative *.proto`
