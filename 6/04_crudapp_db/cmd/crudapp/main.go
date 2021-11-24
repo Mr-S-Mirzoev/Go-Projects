@@ -2,9 +2,10 @@ package main
 
 import (
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
 	"html/template"
 	"net/http"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"crudapp/pkg/handlers"
 	"crudapp/pkg/items"
@@ -39,13 +40,13 @@ func main() {
 
 	templates := template.Must(template.ParseGlob("./templates/*"))
 
-	sm := session.NewSessionsMem()
+	sm := session.NewSessionsManager()
 	zapLogger, _ := zap.NewProduction()
 	defer zapLogger.Sync() // flushes buffer, if any
 	logger := zapLogger.Sugar()
 
-	userRepo := user.NewUserRepo()
-	itemsRepo := items.NewRepository(db)
+	userRepo := user.NewMemoryRepo()
+	itemsRepo := items.NewMysqlRepo(db)
 
 	userHandler := &handlers.UserHandler{
 		Tmpl:     templates,

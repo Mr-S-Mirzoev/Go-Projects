@@ -38,3 +38,7 @@ func SessionFromContext(ctx context.Context) (*Session, error) {
 	}
 	return sess, nil
 }
+
+func ContextWithSession(ctx context.Context, sess *Session) context.Context {
+	return context.WithValue(ctx, SessionKey, sess)
+}

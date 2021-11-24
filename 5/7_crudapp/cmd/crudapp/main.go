@@ -17,13 +17,13 @@ import (
 func main() {
 	templates := template.Must(template.ParseGlob("./templates/*"))
 
-	sm := session.NewSessionsMem()
+	sm := session.NewSessionsManager()
 	zapLogger, _ := zap.NewProduction()
 	defer zapLogger.Sync() // flushes buffer, if any
 	logger := zapLogger.Sugar()
 
-	userRepo := user.NewUserRepo()
-	itemsRepo := items.NewRepo()
+	userRepo := user.NewMemoryRepo()
+	itemsRepo := items.NewMemoryRepo()
 
 	userHandler := &handlers.UserHandler{
 		Tmpl:     templates,

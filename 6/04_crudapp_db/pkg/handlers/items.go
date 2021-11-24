@@ -14,19 +14,11 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=items.go -destination=items_mock.go -package=handlers ItemRepositoryInterface
-
-type ItemRepositoryInterface interface {
-	GetAll() ([]*items.Item, error)
-	GetByID(int64) (*items.Item, error)
-	Add(*items.Item) (int64, error)
-	Update(*items.Item) (int64, error)
-	Delete(int64) (int64, error)
-}
+//go:generate mockgen -source=items.go -destination=items_mock.go -package=handlers ItemRepo
 
 type ItemsHandler struct {
 	Tmpl      *template.Template
-	ItemsRepo ItemRepositoryInterface
+	ItemsRepo items.ItemRepo
 	Logger    *zap.SugaredLogger
 }
 

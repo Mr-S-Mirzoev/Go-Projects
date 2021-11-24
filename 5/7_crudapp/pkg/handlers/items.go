@@ -16,7 +16,7 @@ import (
 
 type ItemsHandler struct {
 	Tmpl      *template.Template
-	ItemsRepo *items.ItemsRepo
+	ItemsRepo items.ItemsRepo
 	Logger    *zap.SugaredLogger
 }
 
