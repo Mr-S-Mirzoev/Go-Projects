@@ -52,7 +52,7 @@ func CreateManipulationOldReplyTemplate(taskDescription string) *ManipulationOld
 	}
 }
 
-func (tmpl *ManipulationCurrentReplyTemplate) String(typeOfHandler int, curUser UserData) string {
+func (tmpl *ManipulationCurrentReplyTemplate) String(typeOfHandler int, _ UserData) string {
 	messageText := ""
 	switch typeOfHandler {
 	case ASSIGN:
